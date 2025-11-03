@@ -110,3 +110,31 @@ export const formatFileSize = (bytes: number): string => {
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 };
 
+/**
+ * Carica un file dalla cartella public e lo converte in FileWithPreview
+ */
+export const loadPublicFile = async (filename: string): Promise<FileWithPreview | null> => {
+  try {
+    // Fetch del file dalla cartella public
+    const response = await fetch(`/${filename}`);
+    if (!response.ok) {
+      console.warn(`File ${filename} non trovato nella cartella public`);
+      return null;
+    }
+    
+    const blob = await response.blob();
+    const mimeType = blob.type || (filename.endsWith('.png') ? 'image/png' : 'image/jpeg');
+    
+    // Crea un File object
+    const file = new File([blob], filename, { type: mimeType });
+    
+    // Crea FileWithPreview
+    const fileWithPreview = await createFileWithPreview(file);
+    
+    return fileWithPreview;
+  } catch (error) {
+    console.error(`Errore nel caricamento file ${filename}:`, error);
+    return null;
+  }
+};
+

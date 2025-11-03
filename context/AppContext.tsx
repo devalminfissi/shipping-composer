@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { AppContextType, AppState, FileWithPreview, StaticFileType } from '@/types';
-import { loadAllStaticFiles, isSetupComplete as checkStorageSetup } from '@/lib/storageUtils';
-import { saveStaticFile } from '@/lib/storageUtils';
+import { loadPublicFile } from '@/lib/fileUtils';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -12,8 +11,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     staticFiles: {
       logo: null,
       coupon: null,
-      feedback: null,
-      social: null,
     },
     dynamicFiles: {
       order: null,
@@ -22,9 +19,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setupComplete: false,
   });
 
-  // Inizializza dallo storage al mount
+  // Carica i file statici dalla cartella public al mount
   useEffect(() => {
-    initializeFromStorage();
+    initializeFromPublic();
   }, []);
 
   // Aggiorna setupComplete quando cambiano i file statici
@@ -33,10 +30,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, setupComplete: complete }));
   }, [state.staticFiles]);
 
-  const initializeFromStorage = useCallback(() => {
+  const initializeFromPublic = useCallback(async () => {
     try {
-      const staticFiles = loadAllStaticFiles();
-      const setupComplete = checkStorageSetup();
+      // Carica i file dalla cartella public
+      // Prova vari nomi comuni per il logo
+      const logoFiles = ['ALM-Infissi-logo.jpg', 'logo.jpg', 'logo.png', 'Logo.jpg', 'Logo.png'];
+      let logo: FileWithPreview | null = null;
+      
+      for (const filename of logoFiles) {
+        logo = await loadPublicFile(filename);
+        if (logo) {
+          console.log(`Logo caricato: ${filename}`);
+          break;
+        }
+      }
+      
+      if (!logo) {
+        console.warn('Logo non trovato nella cartella public. Assicurati che esista logo.jpg o logo.png');
+      }
+      
+      // Carica il coupon
+      const coupon = await loadPublicFile('Coupon.jpg');
+      if (!coupon) {
+        console.warn('Coupon.jpg non trovato nella cartella public');
+      }
+      
+      const staticFiles = {
+        logo,
+        coupon,
+      };
+      
+      const setupComplete = logo !== null && coupon !== null;
       
       setState({
         staticFiles,
@@ -47,12 +71,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setupComplete,
       });
     } catch (error) {
-      console.error('Errore nell\'inizializzazione dallo storage:', error);
+      console.error('Errore nell\'inizializzazione dai file public:', error);
     }
   }, []);
 
   const setStaticFile = useCallback(
-    async (type: StaticFileType, file: FileWithPreview | null) => {
+    (type: StaticFileType, file: FileWithPreview | null) => {
       setState((prev) => ({
         ...prev,
         staticFiles: {
@@ -60,16 +84,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           [type]: file,
         },
       }));
-
-      // Salva in localStorage se il file è presente
-      if (file) {
-        try {
-          await saveStaticFile(type, file);
-        } catch (error) {
-          console.error(`Errore nel salvataggio file ${type}:`, error);
-          throw error;
-        }
-      }
     },
     []
   );
@@ -100,9 +114,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const checkSetupComplete = useCallback((): boolean => {
     return (
       state.staticFiles.logo !== null &&
-      state.staticFiles.coupon !== null &&
-      state.staticFiles.feedback !== null &&
-      state.staticFiles.social !== null
+      state.staticFiles.coupon !== null
     );
   }, [state.staticFiles]);
 
@@ -112,7 +124,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setDynamicFile,
     clearDynamicFiles,
     checkSetupComplete,
-    initializeFromStorage,
+    initializeFromStorage: initializeFromPublic,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

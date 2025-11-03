@@ -15,22 +15,12 @@ const STATIC_FILES_CONFIG: Array<{
   {
     type: 'logo',
     label: 'Logo Aziendale',
-    description: 'Carica il logo della tua azienda',
+    description: 'Carica il logo della tua azienda (sarà posizionato in cima per coprire logo eBay)',
   },
   {
     type: 'coupon',
     label: 'Immagine Codice Coupon',
-    description: 'Carica l\'immagine del codice coupon',
-  },
-  {
-    type: 'feedback',
-    label: 'Grazie per il tuo ordine - Feedback',
-    description: 'Carica l\'immagine per la richiesta feedback',
-  },
-  {
-    type: 'social',
-    label: 'Invito Social',
-    description: 'Carica l\'immagine "Seguici sui social"',
+    description: 'Carica l\'immagine del codice coupon (sarà posizionata nella seconda pagina)',
   },
 ];
 
@@ -50,12 +40,12 @@ export function StaticFilesManager() {
       <div>
         <h2 className="text-2xl font-bold mb-2">Configurazione File Statici</h2>
         <p className="text-muted-foreground">
-          Carica i 4 file statici che verranno utilizzati per personalizzare tutti i documenti.
+          Carica i 2 file statici che verranno utilizzati per personalizzare tutti i documenti.
           Questi file verranno salvati e riutilizzati automaticamente.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
         {STATIC_FILES_CONFIG.map((config) => {
           const file = state.staticFiles[config.type];
           const isComplete = file !== null;

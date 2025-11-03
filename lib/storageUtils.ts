@@ -136,8 +136,6 @@ export const loadAllStaticFiles = (): Record<StaticFileType, FileWithPreview | n
   return {
     logo: loadStaticFile('logo'),
     coupon: loadStaticFile('coupon'),
-    feedback: loadStaticFile('feedback'),
-    social: loadStaticFile('social'),
   };
 };
 
@@ -155,14 +153,30 @@ const estimateLocalStorageSize = (): number => {
 };
 
 /**
- * Verifica se il setup è completo (tutti i 4 file statici presenti)
+ * Verifica se il setup è completo (tutti i 2 file statici presenti: logo e coupon)
  */
 export const isSetupComplete = (): boolean => {
   return (
     hasStaticFile('logo') &&
-    hasStaticFile('coupon') &&
-    hasStaticFile('feedback') &&
-    hasStaticFile('social')
+    hasStaticFile('coupon')
   );
+};
+
+/**
+ * Pulisce i vecchi file statici (feedback e social) dal localStorage
+ * Utile per la migrazione dopo la rimozione di questi file
+ */
+export const cleanupOldStaticFiles = (): void => {
+  if (typeof window === 'undefined') return; // Server-side check
+  
+  const oldKeys = ['feedback', 'social'];
+  oldKeys.forEach((key) => {
+    // Usa direttamente il prefisso + key invece di getStorageKey per evitare errori di tipo
+    const storageKey = `${STORAGE_PREFIX}${key}`;
+    if (localStorage.getItem(storageKey) !== null) {
+      localStorage.removeItem(storageKey);
+      console.log(`Rimosso vecchio file statico: ${key}`);
+    }
+  });
 };
 

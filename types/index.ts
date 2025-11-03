@@ -1,4 +1,4 @@
-export type StaticFileType = 'logo' | 'coupon' | 'feedback' | 'social';
+export type StaticFileType = 'logo' | 'coupon';
 
 export interface FileWithPreview {
   file: File;
@@ -20,8 +20,6 @@ export interface AppState {
   staticFiles: {
     logo: FileWithPreview | null;
     coupon: FileWithPreview | null;
-    feedback: FileWithPreview | null;
-    social: FileWithPreview | null;
   };
   dynamicFiles: {
     order: FileWithPreview | null;
